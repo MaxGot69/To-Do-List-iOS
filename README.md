@@ -63,25 +63,15 @@ To Do List/
 
 ## Скриншоты
 
-### Главный экран
-![Главный экран](screenshots/Screen-1.png)
-*Список задач с возможностью поиска и управления*
+<p float="left">
+  <img src="screenshots/Screen-1.png" width="200" />
+  <img src="screenshots/Screen-2.png" width="200" />
+  <img src="screenshots/Screen-3.png" width="200" />
+  <img src="screenshots/Screen-4.png" width="200" />
+  <img src="screenshots/Screen-5.png" width="200" />
+</p>
 
-### Добавление задачи
-![Добавление задачи](screenshots/Screen-2.png)
-*Форма создания новой задачи*
-
-### Редактирование задачи
-![Редактирование](screenshots/Screen-3.png)
-*Редактирование существующей задачи*
-
-### Контекстное меню
-![Контекстное меню](screenshots/Screen-4.png)
-*Действия с задачей: редактирование, удаление, шаринг*
-
-### Поиск задач
-![Поиск](screenshots/Screen-5.png)
-*Поиск задач по названию*
+*Главный экран • Добавление задачи • Редактирование • Контекстное меню • Поиск*
 
 ## Технические требования
 
