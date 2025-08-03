@@ -1,9 +1,4 @@
-//
-//  Persistence.swift
-//  To Do List
-//
-//  Created by Maxim Gotovchenko on 03.08.2025.
-//
+
 
 import CoreData
 
@@ -14,9 +9,13 @@ struct PersistenceController {
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
-        for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+        for i in 0..<10 {
+            let newTask = Task(context: viewContext)
+            newTask.id = UUID().uuidString
+            newTask.title = "Sample Task \(i + 1)"
+            newTask.taskDescription = "This is a sample task for preview"
+            newTask.createdDate = Date()
+            newTask.isCompleted = false
         }
         do {
             try viewContext.save()
