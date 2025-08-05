@@ -19,12 +19,10 @@ protocol TaskListPresenterProtocol: AnyObject {
     func didToggleTask(_ task: Task)
     func didDeleteTask(_ task: Task)
     func didTapEditTask(_ task: Task?)
-    func didTapShareTask(_ task: Task?)
+    func didLongPressTask(_ task: Task)
     func didSearchTasks(_ query: String)
     func saveEditedTask()
     func taskCreated()
-    func taskCreatedFromAddTask()
-    func forceReloadFromAPI()
     func clearAllDataAndReload()
 }
 
@@ -35,17 +33,15 @@ protocol TaskListInteractorProtocol: AnyObject {
     func toggleTask(_ task: Task)
     func deleteTask(_ task: Task)
     func searchTasks(_ query: String)
-    func forceReloadFromAPI()
+    func clearAllDataAndReload()
 }
 
 // MARK: - TaskList Interactor Output Protocol
 protocol TaskListInteractorOutputProtocol: AnyObject {
     func tasksLoaded(_ tasks: [Task])
-    func loadingStarted()
-    func loadingFinished()
-    func errorOccurred(_ message: String)
-    func taskDeleted()
     func tasksSearchCompleted(_ tasks: [Task])
+    func taskCreated()
+    func errorOccurred(_ message: String)
 }
 
 // MARK: - TaskList Router Protocol

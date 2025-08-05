@@ -1,9 +1,10 @@
+import Foundation
 import SwiftUI
 
 // MARK: - AddTask Router
 // Router отвечает за навигацию для добавления задач
 
-class AddTaskRouter: AddTaskRouterProtocol {
+final class AddTaskRouter: AddTaskRouterProtocol {
     var viewController: AddTaskView?
     
     static func createModule() -> AddTaskView {

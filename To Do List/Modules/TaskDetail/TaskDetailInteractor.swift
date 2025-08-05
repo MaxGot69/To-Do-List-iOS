@@ -4,7 +4,7 @@ import CoreData
 // MARK: - TaskDetail Interactor
 // Interactor содержит бизнес-логику для работы с деталями задачи
 
-class TaskDetailInteractor: TaskDetailInteractorProtocol {
+final class TaskDetailInteractor: TaskDetailInteractorProtocol {
     
     // MARK: - Properties
     var output: TaskDetailInteractorOutputProtocol?
@@ -15,7 +15,7 @@ class TaskDetailInteractor: TaskDetailInteractorProtocol {
         output?.loadingStarted()
         
         let tasks = taskStorage.fetchTasks()
-        if let task = tasks.first(where: { $0.id == id }) {
+        if tasks.first(where: { $0.id == id }) != nil {
             DispatchQueue.main.async { [weak self] in
                 self?.output?.loadingFinished()
                 // Здесь можно добавить метод для передачи задачи, если нужно

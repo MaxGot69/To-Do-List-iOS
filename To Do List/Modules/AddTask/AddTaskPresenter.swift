@@ -4,7 +4,7 @@ import CoreData
 // MARK: - AddTask Presenter
 // Presenter управляет данными между View и Interactor для создания задач
 
-class AddTaskPresenter: AddTaskPresenterProtocol, AddTaskInteractorOutputProtocol, ObservableObject {
+final class AddTaskPresenter: AddTaskPresenterProtocol, AddTaskInteractorOutputProtocol, ObservableObject {
     var view: AddTaskViewProtocol?
     var interactor: AddTaskInteractorProtocol?
     var router: AddTaskRouterProtocol?

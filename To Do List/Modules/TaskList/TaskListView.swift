@@ -5,8 +5,6 @@ struct TaskListView: View {
     
     // MARK: - Properties
     @StateObject var presenter: TaskListPresenter
-    @State private var showActionSheet = false
-    @State private var selectedTask: Task?
     
     // MARK: - Initialization
     init(presenter: TaskListPresenter = TaskListPresenter()) {
@@ -91,9 +89,7 @@ struct TaskListView: View {
                                         presenter.didSelectTask(task)
                                     }
                                     .onLongPressGesture(minimumDuration: 0.5) {
-                                        print("Долгое нажатие на задачу: \(task.title ?? "")")
-                                        selectedTask = task
-                                        showActionSheet = true
+                                        presenter.didLongPressTask(task)
                                     }
                                     .contentShape(Rectangle())
                                 }
@@ -107,7 +103,7 @@ struct TaskListView: View {
                 .navigationBarHidden(true)
             }
             
-            // MARK: - Add Button
+            // MARK: - Add Task Button
             VStack {
                 Spacer()
                 HStack {
@@ -116,8 +112,7 @@ struct TaskListView: View {
                         presenter.didTapAddTask()
                     }) {
                         Image(systemName: "plus")
-                            .font(.title2)
-                            .fontWeight(.semibold)
+                            .font(.system(size: 24, weight: .medium))
                             .foregroundColor(.white)
                             .frame(width: 56, height: 56)
                             .background(Color(Constants.Colors.accentYellow))
@@ -132,51 +127,40 @@ struct TaskListView: View {
         .onAppear {
             presenter.viewDidLoad()
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("TaskCreated"))) { _ in
-            print("Получено уведомление о создании задачи")
-            presenter.taskCreatedFromAddTask()
-        }
         .sheet(isPresented: $presenter.showAddTaskSheet) {
             AddTaskView()
         }
-        .actionSheet(isPresented: $showActionSheet) {
-            ActionSheet(
-                title: Text("Действия с задачей"),
-                message: Text(selectedTask?.title ?? ""),
-                buttons: [
-                    .default(Text("Редактировать")) {
-                        if let task = selectedTask {
-                            presenter.didTapEditTask(task)
-                        }
-                    },
-                    .default(Text("Поделиться")) {
-                        if let task = selectedTask {
-                            presenter.didTapShareTask(task)
-                        }
-                    },
-                    .destructive(Text("Удалить")) {
-                        if let task = selectedTask {
-                            presenter.didDeleteTask(task)
-                        }
-                    },
-                    .cancel(Text("Отмена"))
-                ]
-            )
-        }
         .alert("Редактировать задачу", isPresented: $presenter.showEditAlert) {
-            TextField("Название задачи", text: $presenter.editTitle)
-            TextField("Описание задачи", text: $presenter.editDescription)
+            TextField("Название", text: $presenter.state.editTitle)
+            TextField("Описание", text: $presenter.state.editDescription)
             Button("Сохранить") {
                 presenter.saveEditedTask()
             }
-            Button("Отмена", role: .cancel) {
-                presenter.showEditAlert = false
-                presenter.editingTask = nil
-                presenter.editTitle = ""
-                presenter.editDescription = ""
+            Button("Отмена", role: .cancel) {}
+        }
+        .confirmationDialog("Действия с задачей", isPresented: $presenter.state.showActionSheet) {
+            if let selectedTask = presenter.state.selectedTask {
+                Button("Редактировать") {
+                    presenter.didTapEditTask(selectedTask)
+                }
+                
+                ShareLink(
+                    item: """
+                    Задача: \(selectedTask.title ?? "")
+                    Описание: \(selectedTask.taskDescription ?? "Нет описания")
+                    Статус: \(selectedTask.isCompleted ? "Выполнено" : "Не выполнено")
+                    """,
+                    subject: Text("Задача из To Do List"),
+                    message: Text("Поделился задачей")
+                ) {
+                    Label("Поделиться", systemImage: "square.and.arrow.up")
+                }
+                
+                Button("Удалить", role: .destructive) {
+                    presenter.didDeleteTask(selectedTask)
+                }
             }
-        } message: {
-            Text("Измените название и описание задачи")
+            Button("Отмена", role: .cancel) {}
         }
     }
 }

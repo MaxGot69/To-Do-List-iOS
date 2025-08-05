@@ -5,7 +5,7 @@ import CoreData
 // Этот файл содержит модель Task для CoreData
 // Entity - это модель данных в VIPER архитектуре
 
-struct TaskModel {
+struct TaskModel: Codable {
     let id: String
     let title: String
     let taskDescription: String?

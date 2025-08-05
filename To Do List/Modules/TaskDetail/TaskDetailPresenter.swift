@@ -4,7 +4,7 @@ import CoreData
 // MARK: - TaskDetail Presenter
 // Presenter управляет данными между View и Interactor для деталей задачи
 
-class TaskDetailPresenter: TaskDetailPresenterProtocol, TaskDetailInteractorOutputProtocol, ObservableObject {
+final class TaskDetailPresenter: TaskDetailPresenterProtocol, TaskDetailInteractorOutputProtocol, ObservableObject {
     var view: TaskDetailViewProtocol?
     var interactor: TaskDetailInteractorProtocol?
     var router: TaskDetailRouterProtocol?

@@ -5,7 +5,7 @@ import CoreData
 // Главный координатор приложения
 // Управляет навигацией между модулями и инициализацией
 
-class AppCoordinator: ObservableObject {
+final class AppCoordinator: ObservableObject {
     @Published var currentView: AnyView?
     
     init() {

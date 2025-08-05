@@ -169,8 +169,8 @@ struct TaskDetailView: View {
     let context = PersistenceController.preview.container.viewContext
     let task = Task(context: context)
     task.id = "preview-task"
-    task.title = "Заняться спортом"
-    task.taskDescription = "Сходить в спортзал или сделать тренировку дома. Не забыть про разминку и растяжку!"
+    task.title = "Sample Task"
+    task.taskDescription = "This is a sample task for preview"
     task.createdDate = Date()
     task.isCompleted = false
     

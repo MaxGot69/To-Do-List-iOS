@@ -1,7 +1,7 @@
 import Foundation
 import CoreData
 
-class AddTaskInteractor: AddTaskInteractorProtocol {
+final class AddTaskInteractor: AddTaskInteractorProtocol {
     
     // MARK: - Properties
     weak var output: AddTaskInteractorOutputProtocol?

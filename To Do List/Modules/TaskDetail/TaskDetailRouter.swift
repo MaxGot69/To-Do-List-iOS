@@ -1,9 +1,10 @@
+import Foundation
 import SwiftUI
 
 // MARK: - TaskDetail Router
 // Router отвечает за навигацию для деталей задачи
 
-class TaskDetailRouter: TaskDetailRouterProtocol {
+final class TaskDetailRouter: TaskDetailRouterProtocol {
     var viewController: TaskDetailView?
     
     static func createModule(with task: Task) -> TaskDetailView {
@@ -27,8 +28,7 @@ class TaskDetailRouter: TaskDetailRouterProtocol {
     }
     
     func navigateToEditTask(_ task: Task) {
-        // Навигация к редактированию задачи
         print("Навигация к редактированию задачи: \(task.title ?? "nil")")
-        // TODO: Создать экран редактирования
+        // Navigation is handled by NavigationStack
     }
 } 

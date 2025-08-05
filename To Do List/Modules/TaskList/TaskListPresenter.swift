@@ -1,7 +1,16 @@
 import Foundation
 import CoreData
 
-class TaskListPresenter: TaskListPresenterProtocol, TaskListInteractorOutputProtocol, ObservableObject {
+// MARK: - TaskList State
+struct TaskListState {
+    var selectedTask: Task?
+    var editingTask: Task?
+    var editTitle: String = ""
+    var editDescription: String = ""
+    var showActionSheet: Bool = false
+}
+
+final class TaskListPresenter: TaskListPresenterProtocol, TaskListInteractorOutputProtocol, ObservableObject {
     
     // MARK: - Properties
     var view: TaskListViewProtocol?
@@ -11,13 +20,10 @@ class TaskListPresenter: TaskListPresenterProtocol, TaskListInteractorOutputProt
     @Published var tasks: [Task] = []
     @Published var showEditAlert = false
     @Published var showAddTaskSheet = false
-    @Published var editingTask: Task?
-    @Published var editTitle = ""
-    @Published var editDescription = ""
+    @Published var state = TaskListState()
     
     // MARK: - Lifecycle
     func viewDidLoad() {
-        print("Приложение запущено - загружаю данные из API")
         interactor?.loadTasksFromAPI()
     }
     
@@ -27,17 +33,14 @@ class TaskListPresenter: TaskListPresenterProtocol, TaskListInteractorOutputProt
     
     // MARK: - User Actions
     func didSelectTask(_ task: Task) {
-        print("Выбрана задача: \(task.title ?? "")")
         router?.navigateToTaskDetail(task)
     }
     
     func didTapAddTask() {
-        print("Нажата кнопка добавления задачи")
         showAddTaskSheet = true
     }
     
     func didToggleTask(_ task: Task) {
-        print("Переключение статуса задачи: \(task.title ?? "")")
         interactor?.toggleTask(task)
         
         // Обновляем список после переключения
@@ -47,7 +50,6 @@ class TaskListPresenter: TaskListPresenterProtocol, TaskListInteractorOutputProt
     }
     
     func didDeleteTask(_ task: Task) {
-        print("Удаление задачи: \(task.title ?? "")")
         interactor?.deleteTask(task)
         
         // Обновляем список после удаления
@@ -58,133 +60,69 @@ class TaskListPresenter: TaskListPresenterProtocol, TaskListInteractorOutputProt
     
     func didTapEditTask(_ task: Task?) {
         guard let task = task else { return }
-        print("Редактирование задачи: '\(task.title ?? "")'")
         
         // Устанавливаем данные для редактирования
-        editingTask = task
-        editTitle = task.title ?? ""
-        editDescription = task.taskDescription ?? ""
+        state.editingTask = task
+        state.editTitle = task.title ?? ""
+        state.editDescription = task.taskDescription ?? ""
         showEditAlert = true
     }
     
-    func didTapShareTask(_ task: Task?) {
-        print("Шаринг задачи: '\(task?.title ?? "")'")
-        // TODO: Реализовать шаринг
-        view?.showError("Шаринг будет реализован в следующей версии")
-    }
-    
-    func didSearchTasks(_ query: String) {
-        print("Поиск задач с запросом: '\(query)'")
-        if query.isEmpty {
-            // Если поиск пустой, загружаем все задачи
-            interactor?.fetchTasks()
-        } else {
-            // Иначе ищем задачи
-            interactor?.searchTasks(query)
-        }
+    func didLongPressTask(_ task: Task) {
+        state.selectedTask = task
+        state.showActionSheet = true
     }
     
     func saveEditedTask() {
-        guard let task = editingTask else { return }
-        
-        print("Сохраняю отредактированную задачу: '\(editTitle)'")
+        guard let task = state.editingTask else { return }
         
         // Обновляем задачу в CoreData
-        task.title = editTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        task.taskDescription = editDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : editDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+        task.title = state.editTitle
+        task.taskDescription = state.editDescription
         
-        // Сохраняем изменения
-        let taskStorage = TaskStorage()
-        taskStorage.updateTask(task)
-        
-        // Обновляем список
-        DispatchQueue.main.async { [weak self] in
-            self?.interactor?.fetchTasks()
+        do {
+            try task.managedObjectContext?.save()
+            
+            // Обновляем список
+            interactor?.fetchTasks()
+            
+            // Сбрасываем состояние редактирования
+            state.editingTask = nil
+            state.editTitle = ""
+            state.editDescription = ""
+            showEditAlert = false
+            
+        } catch {
+            print("Ошибка при обновлении задачи: \(error)")
         }
-        
-        // Сбрасываем состояние редактирования
-        editingTask = nil
-        editTitle = ""
-        editDescription = ""
-        showEditAlert = false
-    }
-    
-    func taskCreated() {
-        print("Новая задача создана, обновляю список")
-        // Обновляем список задач после создания новой
-        DispatchQueue.main.async { [weak self] in
-            self?.interactor?.fetchTasks()
-        }
-    }
-    
-    func taskCreatedFromAddTask() {
-        print("Задача создана из AddTask модуля, обновляю список")
-        // Обновляем список задач после создания новой
-        DispatchQueue.main.async { [weak self] in
-            self?.interactor?.fetchTasks()
-        }
-    }
-    
-    func forceReloadFromAPI() {
-        print("Принудительная перезагрузка данных из API")
-        interactor?.forceReloadFromAPI()
     }
     
     func clearAllDataAndReload() {
-        print("Очищаю все данные и перезагружаю")
-        // Сначала очищаем данные
-        let taskStorage = TaskStorage()
-        taskStorage.clearAllTasks()
-        
-        // Затем перезагружаем из API
-        DispatchQueue.main.async { [weak self] in
-            self?.interactor?.loadTasksFromAPI()
-        }
+        interactor?.clearAllDataAndReload()
     }
     
-    // MARK: - Interactor Output
+    func didSearchTasks(_ query: String) {
+        interactor?.searchTasks(query)
+    }
+    
+    // MARK: - TaskListInteractorOutputProtocol
     func tasksLoaded(_ tasks: [Task]) {
-        print("Загружено \(tasks.count) задач из CoreData")
         DispatchQueue.main.async { [weak self] in
             self?.tasks = tasks
-            self?.view?.showTasks(tasks)
-        }
-    }
-    
-    func loadingStarted() {
-        DispatchQueue.main.async { [weak self] in
-            self?.view?.showLoading()
-        }
-    }
-    
-    func loadingFinished() {
-        DispatchQueue.main.async { [weak self] in
-            self?.view?.hideLoading()
-        }
-    }
-    
-    func errorOccurred(_ message: String) {
-        DispatchQueue.main.async { [weak self] in
-            self?.view?.showError(message)
-        }
-    }
-    
-    func taskDeleted() {
-        print("Задача удалена")
-        DispatchQueue.main.async { [weak self] in
-            self?.interactor?.fetchTasks()
         }
     }
     
     func tasksSearchCompleted(_ tasks: [Task]) {
-        print("Поиск завершен, найдено \(tasks.count) задач")
-        print("Детали найденных задач:")
-        for (index, task) in tasks.enumerated() {
-            print("  \(index + 1). ID=\(task.id ?? "nil"), Title='\(task.title ?? "nil")', Completed=\(task.isCompleted)")
-        }
         DispatchQueue.main.async { [weak self] in
             self?.tasks = tasks
-            self?.view?.showSearchResults(tasks)
         }
+    }
+    
+    func taskCreated() {
+        interactor?.fetchTasks()
+    }
+    
+    func errorOccurred(_ message: String) {
+        print("Ошибка: \(message)")
     }
 } 
